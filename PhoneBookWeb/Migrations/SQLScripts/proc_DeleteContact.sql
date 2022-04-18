@@ -1,0 +1,27 @@
+DROP PROCEDURE IF EXISTS [dbo].[proc_DeleteContact]
+GO
+
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[proc_DeleteContact]
+	@Id      INT
+AS
+BEGIN
+	SET NOCOUNT ON; 
+
+	UPDATE t_contact WITH (ROWLOCK) 
+	SET f_deleted = 1
+	WHERE id = @Id
+	AND f_deleted = 0;
+
+	IF @@ROWCOUNT = 0
+	BEGIN
+		RETURN;
+	END
+
+	SELECT 1;
+END
+GO

@@ -1,0 +1,72 @@
+﻿@using PhoneBookWeb.Models;
+@model Tuple<Contacts, bool>
+@{
+    Layout = "~/Views/Shared/_LayoutEmpty.cshtml";
+}
+
+          <form id="contactForm">
+                  <input type="hidden" id="contactLabel" value="@(Model.Item2? "Edit": "Create")" />
+                  <input type="hidden" name="id" value="@Model.Item1.Id" />
+              <div class="row me-3">   
+                  <label for="name" class="col-sm-2 col-form-label">Name</label>   
+                  <div class="col-sm-10">    
+                      <input type="text" class="form-control" value="@(Model.Item1.Name)" maxlength="50" id="name" name="name" required> 
+                  </div> 
+              </div>
+              <div class="row me-3">   
+                  <label for="phoneNo" class="col-sm-2 col-form-label">Phone No</label>   
+                  <div class="col-sm-10">    
+                      <input type="text" class="form-control" value="@(Model.Item1.PhoneNo)" maxlength="11" id="phoneNo" name="phoneNo" required> 
+                  </div> 
+              </div>
+              <div class="row me-3">   
+                  <label for="address" class="col-sm-2 col-form-label">Address</label>   
+                  <div class="col-sm-10">    
+                      <input type="text" class="form-control" value="@(Model.Item1.Address)" maxlength="50" id="address" name="address" required> 
+                  </div> 
+              </div>
+              <div class="row align-content-center">
+                  <button type="submit" class="btn btn-primary col-2 pe-3">Submit</button>
+                  <button type="button" class="btn btn-secondary col-2" data-bs-dismiss="modal">Cancel</button>
+              </div>
+          </form>
+
+<script>
+    $(document).ready(function () {
+        $("#contactForm").submit(function (event) {
+        event.preventDefault();
+        const mode = @Model.Item2.ToString().ToLower();
+        if (mode) {
+        $.ajax({
+                url: '@Url.Action("UpdateContact", "Contact")',
+                data: $('#contactForm').serialize(),
+                method: 'POST',
+                success: function () {
+                    swal("Success", "You have successfully created the contact!", "success").then(function () {
+                            location.reload();
+                        });
+                },
+                error: function (jqXHR) {
+                    swal("Error", jqXHR.responseText, "error");
+                    return false;
+                }
+            });
+        } else {
+        $.ajax({
+                url: '@Url.Action("CreateContact", "Contact")',
+                data: $('#contactForm').serialize(),
+                method: 'POST',
+                success: function () {
+                    swal("Success", "You have successfully created the contact!", "success").then(function () {
+                            location.reload();
+                        });
+                },
+                error: function (jqXHR) {
+                    swal("Error", jqXHR.responseText, "error");
+                    return false;
+                }
+            });
+        }
+    });
+    });
+</script>

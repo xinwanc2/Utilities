@@ -1,0 +1,138 @@
+﻿@using PhoneBookWeb.Models;
+@model Tuple<IEnumerable<Contacts>, ContactFilter>
+@{
+    ViewBag.Title = "Phone Book";
+}
+
+<form class="row gy-2 gx-3 align-items-center" action="/Contact/Contacts">
+  <div class="col-auto">
+    <input id="name" type="text" name="name" placeholder="Name" maxlength="10" value="@Model.Item2.Name" />
+  </div>
+  <div class="col-auto">
+    <input id="phoneNo" type="text" name="phoneNo" placeholder="Phone No" maxlength="11" value="@Model.Item2.PhoneNo" />
+  </div>
+  <div class="col-auto">
+    <input id="address" type="text" name="address" placeholder="Addrress" maxlength="50" value="@Model.Item2.Address" />
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Search</button>
+    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#createBackdrop">Create</button>
+  </div>
+</form>
+
+<div class="row pt-2">
+    <table class="table table-bordered">
+    <thead>
+        <tr>
+            <th hidden>Id</th>
+            <th class="text-center">Name</th>
+            <th class="text-center">Phone No</th>
+            <th class="text-center">Addrress</th>
+            <th class="text-center">Action</th>
+        </tr>
+    </thead>
+    <tbody id="contactBody">
+        @foreach (var item in Model.Item1)
+        {
+            <tr>
+                <td class="id">@item.Id</td>
+                <td class="name">@item.Name</td>
+                <td>@item.PhoneNo</td>
+                <td>@item.Address</td>
+                <td>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createBackdrop">Edit</button>
+                    <button class="btn btn-danger" id="deleteContactButton" type="button">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="createBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header" id="contactHeader">
+                <h5 class="modal-title" id="contactTitle"></h5>
+                </div>
+
+            <div class="modal-body" id="contactContainer">
+            </div>
+    </div>
+  </div>
+</div>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+<script>
+    
+    $(document).ready(function () {
+        
+        $("#contactBody").delegate("#deleteContactButton", 'click', function () {
+        const tableRow = $(this).closest("tr");
+        const id = tableRow.find('.id').text().trim();
+        const name = tableRow.find('.name').text().trim();
+
+        let confirmDeleteMessage = "Delete - " + name + "?";
+        // Display swal to confirm
+
+        swal({
+            title: "Delete phonebook",
+            text: "Are you sure you want to delete the phonebook?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then(function (justDelete) {
+            if (justDelete) {
+                $.ajax({
+                    type: "POST",
+                    url: '@Url.Action("DeleteContact", "Contact")',
+                    data: {
+                        id
+                    },
+                success: function () {
+                    swal("Success", "You have successfully deleted the contact!", "success");
+                },
+                error: function (jqXHR) {
+                    swal("Error", jqXHR.responseText, "error");
+                    return false;
+                }
+                });
+            }
+        }).catch(swal.noop);
+
+    });
+    
+    $("#createBackdrop").on("hidden.bs.modal", function () {
+        $("#contactContainer").html("");
+        $('#contactTitle').html("");
+    });
+    
+    $('#createBackdrop').on('show.bs.modal', function (e) {
+        const tableRow = $(e.relatedTarget).closest("tr");
+        const id = tableRow.find('.id').text().trim();
+
+        alert(id);
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("ContactForm", "Contact")',
+            cache: false,
+            data: {
+                id
+            },
+            dataType: "html",
+            success: function (response) {
+                $('#contactContainer').html(response);
+                let contactHeaderValue = $("#contactLabel").val();
+                $('#contactTitle').html(contactHeaderValue);
+            }
+        });
+
+    });
+   });
+</script>
+
+
